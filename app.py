@@ -5,7 +5,6 @@ from openai import OpenAI
 import paho.mqtt.client as paho
 import json
 import time
-from IPython.display import Audio, display
 
 # MQTT
 def on_publish(client, userdata, result):
@@ -17,8 +16,6 @@ def on_message(client, userdata, message):
     time.sleep(2)
     message_received = str(message.payload.decode("utf-8"))
     st.write(f"📨 Mensaje recibido: {message_received}")
-    if message_received == "Sonido":
-        display(Audio("hum_high.mp3", autoplay=True))
 
 broker = "broker.mqttdashboard.com"
 port = 1883
@@ -100,25 +97,23 @@ if uploaded_file is not None and api_key and analyze_button:
 
             st.markdown("---")
 
-            # Mostrar memes y sonidos
+            # Mostrar memes según placa
             if "CKN 364" in full_response.upper():
-                st.image("https://media.giphy.com/media/111ebonMs90YLu/giphy.gif", caption="¡Placa reconocida: CKN 364 🎉!", use_column_width=True)
-                display(Audio("happy.mp3", autoplay=True))
+                st.image("https://media.giphy.com/media/111ebonMs90YLu/giphy.gif", caption="¡Placa reconocida: CKN 364 🎉!", use_container_width=True)
             elif "MXL 931" in full_response.upper():
-                st.image("https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif", caption="Placa reconocida: MXL 931 😿", use_column_width=True)
-                display(Audio("sad.mp3", autoplay=True))
+                st.image("https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif", caption="Placa reconocida: MXL 931 😿", use_container_width=True)
 
         except Exception as e:
             st.error(f"❌ Error al analizar: {e}")
-            st.image("https://media.giphy.com/media/f7mQvY1MJ0aDC/giphy.gif", caption="Algo salió mal... 😢", use_column_width=True)
+            st.image("https://media.giphy.com/media/f7mQvY1MJ0aDC/giphy.gif", caption="Algo salió mal... 😢", use_container_width=True)
 
 else:
     if not uploaded_file and analyze_button:
         st.warning("⚠️ Por favor sube una imagen.")
-        st.image("https://media.giphy.com/media/TqiwHbFBaZ4ti/giphy.gif", caption="¿Y la imagen? 🤔", use_column_width=True)
+        st.image("https://media.giphy.com/media/TqiwHbFBaZ4ti/giphy.gif", caption="¿Y la imagen? 🤔", use_container_width=True)
     if not api_key:
         st.warning("⚠️ Por favor ingresa tu API key.")
-        st.image("https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", caption="¡Falta la clave API!", use_column_width=True)
+        st.image("https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", caption="¡Falta la clave API!", use_container_width=True)
 
 # Botón para mostrar texto completo
 if st.button("📤 Enviar respuesta"):
