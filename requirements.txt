@@ -1,4 +1,4 @@
 streamlit
 openai
 paho-mqtt==1.6.1
-ipython         # para que IPython.display.Audio funcione sin errores
+ipython
