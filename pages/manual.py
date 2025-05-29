@@ -46,27 +46,34 @@ client1 = paho.Client("Ustayalejandro")
 client1.on_message = on_message
 
 # Contenedor visual con botones grandes
-with st.container():
-    st.markdown("<h4 style='color:#34495e;'>📲 Enviar Comando:</h4>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("🟢 Abrir Acceso", use_container_width=True):
-            act1 = "CKN 364"
-            client1 = paho.Client("Ustayalejandro")
-            client1.on_publish = on_publish
-            client1.connect(broker, port)
-            message = json.dumps({"Gesto": act1})
-            ret = client1.publish("Usta", message)
-            st.success("✅ Comando 'Abrir' enviado correctamente.")
+st.markdown("<h4 style='color:#34495e;'>📲 Enviar Comando:</h4>", unsafe_allow_html=True)
 
-    with col2:
-        if st.button("🔴 Cerrar Acceso", use_container_width=True):
-            act1 = "MXL 931"
-            client1 = paho.Client("Ustayalejandro")
-            client1.on_publish = on_publish
-            client1.connect(broker, port)
-            message = json.dumps({"Gesto": act1})
-            ret = client1.publish("Usta", message)
-            st.success("✅ Comando 'Cerrar' enviado correctamente.")
+col1, col2 = st.columns(2)
+
+# Acción Abrir
+with col1:
+    if st.button("🟢 Abrir Acceso", use_container_width=True):
+        act1 = "CKN 364"
+        client1 = paho.Client("Ustayalejandro")
+        client1.on_publish = on_publish
+        client1.connect(broker, port)
+        message = json.dumps({"Gesto": act1})
+        ret = client1.publish("Usta", message)
+        st.success("✅ Comando 'Abrir' enviado correctamente.")
+        
+        # Meme para abrir
+        st.image("https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif", caption="¡Puerta abierta!", use_column_width=True)
+
+# Acción Cerrar
+with col2:
+    if st.button("🔴 Cerrar Acceso", use_container_width=True):
+        act1 = "MXL 931"
+        client1 = paho.Client("Ustayalejandro")
+        client1.on_publish = on_publish
+        client1.connect(broker, port)
+        message = json.dumps({"Gesto": act1})
+        ret = client1.publish("Usta", message)
+        st.success("✅ Comando 'Cerrar' enviado correctamente.")
+        
+        # Meme para cerrar
+        st.image("https://media.giphy.com/media/3oz8xKaR836UJOYeOc/giphy.gif", caption="¡Cerrado con estilo!", use_column_width=True)
