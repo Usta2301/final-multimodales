@@ -19,51 +19,50 @@ def on_message(client, userdata, message):
         sound_file = 'hum_high.mp3'
         display(Audio(sound_file, autoplay=True))
 
-# MQTT Config
+# MQTT Configuración
 broker = "broker.mqttdashboard.com"
 port = 1883
 client1 = paho.Client("Usta456")
 client1.on_message = on_message
 
-# Función para codificar imagen
+# Codificar imagen a base64
 def encode_image(image_file):
     return base64.b64encode(image_file.getvalue()).decode("utf-8")
 
 # Configuración de página
 st.set_page_config(
-    page_title="🔍 Análisis de Imagen Inteligente",
+    page_title="🔍 Análisis de Imagen",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Encabezado
+# Título principal
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🤖 Análisis de Imagen</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Entrada de clave API
-with st.sidebar:
-    st.markdown("### 🔑 Ingresa tu API Key")
-    ke = st.text_input('Clave de OpenAI', type="password")
-    os.environ['OPENAI_API_KEY'] = ke
-    api_key = os.environ['OPENAI_API_KEY']
+# Ingreso de clave API (sin mover de lugar)
+ke = st.text_input('🔑 Ingresa tu Clave')
+os.environ['OPENAI_API_KEY'] = ke
+api_key = os.environ['OPENAI_API_KEY']
 
-# Subida de imagen
+# Carga de imagen
 uploaded_file = st.file_uploader("📤 Sube una imagen", type=["jpg", "png", "jpeg"])
 
 if uploaded_file:
     with st.expander("🖼️ Vista previa de la imagen", expanded=True):
         st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
 
-# Toggle para detalles adicionales
+# Toggle de detalles
 show_details = st.toggle("➕ Añadir detalles sobre la imagen", value=True)
+
+# Detalles adicionales fijos
 additional_details = "Responde solo con las letras y número grandes que aparecen en la imagen"
 
-# Botón para analizar
-analyze_button = st.button("🚀 Analizar imagen")
+# Botón para análisis
+analyze_button = st.button("🚀 Analizar la imagen", type="secondary")
 
-# Lógica principal
 if uploaded_file is not None and api_key and analyze_button:
-    with st.spinner("🔍 Analizando imagen..."):
+    with st.spinner("Analizando imagen..."):
         base64_image = encode_image(uploaded_file)
 
         prompt_text = "Describe what you see in the image in Spanish"
@@ -113,7 +112,7 @@ else:
     if not api_key:
         st.warning("⚠️ Por favor ingresa tu API Key.")
 
-# Mostrar resultado final
+# Botón adicional para mostrar la respuesta
 if st.button("📤 Enviar respuesta"):
     try:
         st.write(full_response)
