@@ -7,66 +7,66 @@ import json
 import time
 from IPython.display import Audio
 
+# MQTT Callbacks
 def on_publish(client, userdata, result):
-    print("el dato ha sido publicado \n")
+    print("📡 Mensaje MQTT publicado")
     pass
 
 def on_message(client, userdata, message):
     global message_received
     time.sleep(2)
     message_received = str(message.payload.decode("utf-8"))
-    st.write(message_received)
+    st.write(f"📨 Mensaje recibido: {message_received}")
     if message_received == "Sonido":
         sound_file = 'hum_high.mp3'
         display(Audio(sound_file, autoplay=True))
 
+# MQTT Broker
 broker = "broker.mqttdashboard.com"
 port = 1883
 client1 = paho.Client("Usta456")
 client1.on_message = on_message
 
-# Function to encode the image to base64
+# Función para codificar imagen a base64
 def encode_image(image_file):
     return base64.b64encode(image_file.getvalue()).decode("utf-8")
 
-# Streamlit page setup
+# Configuración de la página
 st.set_page_config(page_title="🔍 Análisis de Imagen", layout="centered", initial_sidebar_state="collapsed")
 
-# Encabezado bonito
-st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🤖 Análisis de Imagen</h1>", unsafe_allow_html=True)
-st.markdown("---")
+# Encabezado visual
+st.markdown("""
+    <div style='text-align: center; padding: 20px 0;'>
+        <h1 style='color: #2ecc71;'>🤖 Análisis de Imágenes con IA</h1>
+        <p style='color: #555;'>Sube una imagen y extrae letras o números grandes visibles.</p>
+        <hr>
+    </div>
+""", unsafe_allow_html=True)
 
 # Entrada de clave API
-ke = st.text_input('🔑 Ingresa tu Clave')
+ke = st.text_input('🔑 Ingresa tu clave API:')
 os.environ['OPENAI_API_KEY'] = ke
 api_key = os.environ['OPENAI_API_KEY']
-
-# Inicialización del cliente OpenAI
 client = OpenAI(api_key=api_key)
 
 # Subida de imagen
 uploaded_file = st.file_uploader("📤 Sube una imagen", type=["jpg", "png", "jpeg"])
-
 if uploaded_file:
     with st.expander("🖼️ Vista previa de la imagen", expanded=True):
         st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
 
-# Mostrar toggle para detalles
-show_details = st.toggle("➕ Añadir detalles sobre la imagen", value=True)
-
-# Detalles adicionales fijos
+# Detalles adicionales (predefinidos)
+show_details = st.toggle("➕ Añadir detalles a la imagen", value=True)
 additional_details = "Responde solo con las letras y numero grandes que aparecen en la imagen"
 
 # Botón de análisis
-analyze_button = st.button("🚀 Analiza la imagen", type="secondary")
+analyze_button = st.button("🚀 Analiza la imagen")
 
-# Análisis de imagen si todo está listo
+# Lógica del análisis
 if uploaded_file is not None and api_key and analyze_button:
     with st.spinner("🔎 Analizando imagen..."):
         base64_image = encode_image(uploaded_file)
-
         prompt_text = "Describe what you see in the image in Spanish"
-
         if show_details and additional_details:
             prompt_text += f"\n\n{additional_details}"
 
@@ -88,6 +88,7 @@ if uploaded_file is not None and api_key and analyze_button:
         try:
             full_response = ""
             message_placeholder = st.empty()
+
             for completion in client.chat.completions.create(
                 model="gpt-4o", messages=messages,
                 max_tokens=1200, stream=True
@@ -102,15 +103,22 @@ if uploaded_file is not None and api_key and analyze_button:
                     message = json.dumps({"Gesto": full_response})
                     ret = client1.publish("Usta", message)
 
+            # Meme feliz al completar
+            st.image("https://media.giphy.com/media/26gsiCIKW7ANEmxKE/giphy.gif", caption="¡Análisis completado con éxito! 🎉", use_column_width=True)
+
         except Exception as e:
-            st.error(f"❌ Ocurrió un error: {e}")
+            st.error(f"❌ Error al analizar: {e}")
+            st.image("https://media.giphy.com/media/f7mQvY1MJ0aDC/giphy.gif", caption="Algo salió mal... 😢", use_column_width=True)
+
 else:
     if not uploaded_file and analyze_button:
         st.warning("⚠️ Por favor sube una imagen.")
+        st.image("https://media.giphy.com/media/TqiwHbFBaZ4ti/giphy.gif", caption="¿Y la imagen? 🤔", use_column_width=True)
     if not api_key:
         st.warning("⚠️ Por favor ingresa tu API key.")
+        st.image("https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", caption="¡Falta la clave API!", use_column_width=True)
 
-# Botón para mostrar la respuesta final
+# Mostrar respuesta final
 if st.button("📤 Enviar respuesta"):
     try:
         st.write(full_response)
