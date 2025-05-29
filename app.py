@@ -19,13 +19,13 @@ def on_message(client, userdata, message):
         sound_file = 'hum_high.mp3'
         display(Audio(sound_file, autoplay=True))
 
-# MQTT Configuración
+# MQTT Config
 broker = "broker.mqttdashboard.com"
 port = 1883
 client1 = paho.Client("Usta456")
 client1.on_message = on_message
 
-# Codificar imagen a base64
+# Función para codificar imagen
 def encode_image(image_file):
     return base64.b64encode(image_file.getvalue()).decode("utf-8")
 
@@ -37,30 +37,31 @@ st.set_page_config(
 )
 
 # Título principal
-st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🤖 Análisis de Imagen</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #4CAF50;'>📸 Análisis de Imagen</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Ingreso de clave API (sin mover de lugar)
+# Ingreso de clave API (sin mover del lugar original)
 ke = st.text_input('🔑 Ingresa tu Clave')
 os.environ['OPENAI_API_KEY'] = ke
 api_key = os.environ['OPENAI_API_KEY']
 
-# Carga de imagen
+# Subida de imagen
 uploaded_file = st.file_uploader("📤 Sube una imagen", type=["jpg", "png", "jpeg"])
 
 if uploaded_file:
     with st.expander("🖼️ Vista previa de la imagen", expanded=True):
         st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
 
-# Toggle de detalles
+# Mostrar toggle para detalles adicionales
 show_details = st.toggle("➕ Añadir detalles sobre la imagen", value=True)
 
-# Detalles adicionales fijos
-additional_details = "Responde solo con las letras y número grandes que aparecen en la imagen"
+# Esta es tu instrucción fundamental para el reconocimiento de placas:
+additional_details = "Responde solo con las letras y numero grandes que aparecen en la imagen"
 
-# Botón para análisis
-analyze_button = st.button("🚀 Analizar la imagen", type="secondary")
+# Botón para analizar
+analyze_button = st.button("🚀 Analiza la imagen", type="secondary")
 
+# Análisis de imagen
 if uploaded_file is not None and api_key and analyze_button:
     with st.spinner("Analizando imagen..."):
         base64_image = encode_image(uploaded_file)
@@ -68,7 +69,7 @@ if uploaded_file is not None and api_key and analyze_button:
         prompt_text = "Describe what you see in the image in Spanish"
 
         if show_details and additional_details:
-            prompt_text += f"\n\nContexto adicional proporcionado por el usuario:\n{additional_details}"
+            prompt_text += f"\n\n{additional_details}"
 
         messages = [
             {
@@ -112,7 +113,7 @@ else:
     if not api_key:
         st.warning("⚠️ Por favor ingresa tu API Key.")
 
-# Botón adicional para mostrar la respuesta
+# Mostrar la respuesta al presionar botón
 if st.button("📤 Enviar respuesta"):
     try:
         st.write(full_response)
