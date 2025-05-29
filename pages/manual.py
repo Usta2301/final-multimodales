@@ -61,8 +61,8 @@ with col1:
         ret = client1.publish("Usta", message)
         st.success("✅ Comando 'Abrir' enviado correctamente.")
         
-        # Meme para abrir
-        st.image("https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif", caption="¡Puerta abierta!", use_column_width=True)
+        # Meme feliz al abrir
+        st.image("https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif", caption="¡Puerta abierta y todos felices!", use_column_width=True)
 
 # Acción Cerrar
 with col2:
@@ -75,5 +75,5 @@ with col2:
         ret = client1.publish("Usta", message)
         st.success("✅ Comando 'Cerrar' enviado correctamente.")
         
-        # Meme para cerrar
-        st.image("https://media.giphy.com/media/3oz8xKaR836UJOYeOc/giphy.gif", caption="¡Cerrado con estilo!", use_column_width=True)
+        # Meme triste al cerrar
+        st.image("https://media.giphy.com/media/9Y5BbDSkSTiY8/giphy.gif", caption="Puerta cerrada... 😢", use_column_width=True)
