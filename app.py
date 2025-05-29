@@ -4,84 +4,73 @@ import base64
 from openai import OpenAI
 import paho.mqtt.client as paho
 import json
+import time
+from IPython.display import Audio
 
-def on_publish(client,userdata,result):             #create function for callback
-    print("el dato ha sido publicado \n")
-    pass
+def on_publish(client, userdata, result):
+    print("El dato ha sido publicado\n")
 
 def on_message(client, userdata, message):
     global message_received
     time.sleep(2)
-    message_received=str(message.payload.decode("utf-8"))
+    message_received = str(message.payload.decode("utf-8"))
     st.write(message_received)
-    if(message_received=="Sonido"):
-       sound_file = 'hum_high.mp3'
-       display(Audio(sound_file, autoplay=True))
-        
+    if message_received == "Sonido":
+        sound_file = 'hum_high.mp3'
+        display(Audio(sound_file, autoplay=True))
 
-broker="broker.mqttdashboard.com"
-port=1883
-client1= paho.Client("Usta456")
+# MQTT Config
+broker = "broker.mqttdashboard.com"
+port = 1883
+client1 = paho.Client("Usta456")
 client1.on_message = on_message
 
-
-
-# Function to encode the image to base64
+# Función para codificar imagen
 def encode_image(image_file):
     return base64.b64encode(image_file.getvalue()).decode("utf-8")
 
+# Configuración de página
+st.set_page_config(
+    page_title="🔍 Análisis de Imagen Inteligente",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-st.set_page_config(page_title="Analisis de imagen2", layout="centered", initial_sidebar_state="collapsed")
-# Streamlit page setup
-st.title("Análisis de Imagen:🤖🏞️")
-ke = st.text_input('Ingresa tu Clave')
-os.environ['OPENAI_API_KEY'] = ke
+# Encabezado
+st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🤖 Análisis de Imagen</h1>", unsafe_allow_html=True)
+st.markdown("---")
 
+# Entrada de clave API
+with st.sidebar:
+    st.markdown("### 🔑 Ingresa tu API Key")
+    ke = st.text_input('Clave de OpenAI', type="password")
+    os.environ['OPENAI_API_KEY'] = ke
+    api_key = os.environ['OPENAI_API_KEY']
 
-# Retrieve the OpenAI API Key from secrets
-api_key = os.environ['OPENAI_API_KEY']
-
-# Initialize the OpenAI client with the API key
-client = OpenAI(api_key=api_key)
-
-# File uploader allows user to add their own image
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+# Subida de imagen
+uploaded_file = st.file_uploader("📤 Sube una imagen", type=["jpg", "png", "jpeg"])
 
 if uploaded_file:
-    # Display the uploaded image
-    with st.expander("Image", expanded = True):
+    with st.expander("🖼️ Vista previa de la imagen", expanded=True):
         st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
 
-# Toggle for showing additional details input
-show_details = st.toggle("Adiciona detalles sobre la imagen", value=True)
+# Toggle para detalles adicionales
+show_details = st.toggle("➕ Añadir detalles sobre la imagen", value=True)
+additional_details = "Responde solo con las letras y número grandes que aparecen en la imagen"
 
-additional_details = "Responde solo con las letras y numero grandes que aparecen en la imagen"
+# Botón para analizar
+analyze_button = st.button("🚀 Analizar imagen")
 
-#if show_details: 
-    # Text input for additional details about the image, shown only if toggle is True
-    #additional_details = st.text_area(
-        #"Adiciona contexto de la imagen aqui:",
-        #disabled=not show_details
-   # ) 
-   
-# Button to trigger the analysis
-analyze_button = st.button("Analiza la imagen", type="secondary")
-
-# Check if an image has been uploaded, if the API key is available, and if the button has been pressed
+# Lógica principal
 if uploaded_file is not None and api_key and analyze_button:
-
-    with st.spinner("Analizando ..."):
-        # Encode the image
+    with st.spinner("🔍 Analizando imagen..."):
         base64_image = encode_image(uploaded_file)
-    
-        prompt_text = ("Describe what you see in the image in spanish")
-    
+
+        prompt_text = "Describe what you see in the image in Spanish"
+
         if show_details and additional_details:
-            prompt_text += (
-                f"\n\nAdditional Context Provided by the User:\n{additional_details}"
-            )
-    
-        # Create the payload for the completion request - CORRECTED FORMAT
+            prompt_text += f"\n\nContexto adicional proporcionado por el usuario:\n{additional_details}"
+
         messages = [
             {
                 "role": "user",
@@ -96,40 +85,38 @@ if uploaded_file is not None and api_key and analyze_button:
                 ],
             }
         ]
-    
-        # Make the request to the OpenAI API
+
         try:
-            # Stream the response
             full_response = ""
             message_placeholder = st.empty()
+
             for completion in client.chat.completions.create(
-                model="gpt-4o", messages=messages,   
+                model="gpt-4o", messages=messages,
                 max_tokens=1200, stream=True
             ):
-                # Check if there is content to display
                 if completion.choices[0].delta.content is not None:
                     full_response += completion.choices[0].delta.content
                     message_placeholder.markdown(full_response + "▌")
-                    #st.write(full_response)
-                    client1= paho.Client("Usta456")                           
-                    client1.on_publish = on_publish                          
-                    client1.connect(broker,port)  
-                    message =json.dumps({"Gesto":full_response})
-                    ret= client1.publish("Usta", message)
-                    #ret= client1.publish("Usta",full_response) 
-            # Final update to placeholder after the stream ends
 
+                    client1 = paho.Client("Usta456")
+                    client1.on_publish = on_publish
+                    client1.connect(broker, port)
+                    message = json.dumps({"Gesto": full_response})
+                    ret = client1.publish("Usta", message)
 
         except Exception as e:
-            st.error(f"An error occurred: {e}")
+            st.error(f"🚨 Ocurrió un error: {e}")
+
 else:
-    # Warnings for user action required
     if not uploaded_file and analyze_button:
-        st.warning("Please upload an image.")
+        st.warning("⚠️ Por favor sube una imagen.")
     if not api_key:
-        st.warning("Por favor ingresa tu API key.")
-        
-if st.button("send"):
-    st.write(full_response)
-    message_placeholder.markdown(full_response)
-    st.write(full_reponse)
+        st.warning("⚠️ Por favor ingresa tu API Key.")
+
+# Mostrar resultado final
+if st.button("📤 Enviar respuesta"):
+    try:
+        st.write(full_response)
+        message_placeholder.markdown(full_response)
+    except:
+        st.warning("⚠️ Aún no se ha generado ninguna respuesta.")
